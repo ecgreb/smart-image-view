@@ -1,0 +1,28 @@
+# Android
+gen/
+
+# Eclipse
+.classpath
+.project
+.settings
+
+# IntelliJ
+.idea/
+out/
+*.iml
+
+# Ant
+bin/
+build.xml
+local.properties
+project.properties
+
+# Maven
+target/
+pom.xml.*
+
+# Mac
+.DS_Store/
+
+# Robolectric
+tmp
