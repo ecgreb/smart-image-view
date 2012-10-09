@@ -1,5 +1,8 @@
 package com.howaboutwe.android.widget;
 
+import com.howaboutwe.android.widget.support.TestHttpURLConnection;
+import com.howaboutwe.android.widget.support.TestSmartImageView;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -11,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -22,11 +26,13 @@ import static org.junit.Assert.assertThat;
 @RunWith(RobolectricTestRunner.class)
 public class SmartImageViewTest {
 
+    private static final String TEST_URL = "http://www.example.com/some/image.jpg";
+
     private SmartImageView mSmartImageView;
 
     @Before
     public void setUp() throws Exception {
-        mSmartImageView = new SmartImageView(null);
+        mSmartImageView = new TestSmartImageView(null);
     }
 
     @Test
@@ -45,13 +51,20 @@ public class SmartImageViewTest {
     }
 
     @Test
-    public void shouldLoadBitmapFromCache() throws Exception {
+    public void shouldLoadBitmapFromCacheIfAvailable() throws Exception {
         ImageCache imageCache = ImageCache.getInstance();
-        String url = "http://www.example.com/some/image.jpg";
         Bitmap bitmap = BitmapFactory.decodeFile("");
-        imageCache.put(url, bitmap);
+        imageCache.put(TEST_URL, bitmap);
 
-        mSmartImageView.setImageUrl(url);
+        mSmartImageView.setImageUrl(TEST_URL);
+        ShadowImageView shadowImageView = Robolectric.shadowOf(mSmartImageView);
+        assertThat(shadowImageView.getImageBitmap(), notNullValue());
+    }
+
+    @Test
+    public void shouldDownloadImageIfNotCached() throws Exception {
+        TestHttpURLConnection.setTestResponseCode(HttpURLConnection.HTTP_OK);
+        mSmartImageView.setImageUrl(TEST_URL);
         ShadowImageView shadowImageView = Robolectric.shadowOf(mSmartImageView);
         assertThat(shadowImageView.getImageBitmap(), notNullValue());
     }

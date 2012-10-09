@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.net.MalformedURLException;
@@ -14,12 +15,13 @@ import java.net.MalformedURLException;
  * Remote image view with built-in HTTP download and caching.
  */
 public class SmartImageView extends ImageView implements ImageDownload.ImageDownloadListener {
+    private static final String TAG  = SmartImageView.class.getSimpleName();
+
+    final private ImageCache mImageCache = ImageCache.getInstance();
 
     private String mImageUrl = null;
     private Drawable mDefaultDrawable = null;
     private ImageDownload mImageDownload = null;
-
-    final private ImageCache mImageCache = ImageCache.getInstance();
 
     /**
      * {@inheritDoc}
@@ -80,8 +82,12 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
             mImageDownload.cancel();
         }
 
-        mImageDownload = new ImageDownload(mImageUrl, this);
+        mImageDownload = createImageDownload();
         mImageDownload.start();
+    }
+
+    protected ImageDownload createImageDownload() {
+        return new ImageDownload(mImageUrl, this);
     }
 
     public void showDefaultDrawable() {
@@ -100,6 +106,7 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
 
     @Override
     public void onDownloadError(String url) {
+        Log.e(TAG, "Error downloading image: " + url);
     }
 
     private void loadImage(final Bitmap bitmap) {

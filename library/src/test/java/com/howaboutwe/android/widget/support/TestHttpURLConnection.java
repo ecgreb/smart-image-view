@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Test implementation of {@link HttpURLConnection} that simulates all network requests.
+ */
 public class TestHttpURLConnection extends HttpURLConnection {
     private static int sTestResponseCode = -1;
 

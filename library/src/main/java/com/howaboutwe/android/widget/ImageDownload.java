@@ -14,9 +14,9 @@ import java.net.URL;
 public class ImageDownload extends Thread {
     private static final int CONNECT_TIMEOUT_IN_MILLIS = 30 * 1000;
 
-    private String mUrl;
-    private ImageDownloadListener mListener;
-    private boolean mIsCanceled = false;
+    protected String mUrl;
+    protected ImageDownloadListener mListener;
+    protected boolean mIsCanceled = false;
 
     /**
      * Constructs a new {@code ImageDownload} with the given url and listener.
@@ -31,6 +31,13 @@ public class ImageDownload extends Thread {
      */
     @Override
     public void run() {
+        runInternal();
+    }
+
+    /**
+     * Attempts to execute the HTTP request unless this download has been canceled.
+     */
+    protected void runInternal() {
         if (!mIsCanceled) {
             try {
                 downloadImage();
@@ -45,7 +52,7 @@ public class ImageDownload extends Thread {
      *
      * @throws IOException if the request fails.
      */
-    private void downloadImage() throws IOException {
+    protected void downloadImage() throws IOException {
         final HttpURLConnection connection = createConnection();
         connection.setConnectTimeout(CONNECT_TIMEOUT_IN_MILLIS);
 
@@ -126,23 +133,5 @@ public class ImageDownload extends Thread {
          * @param url remote image url.
          */
         public void onDownloadError(String url);
-    }
-
-    // Getters and Setters
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
-    }
-
-    public ImageDownloadListener getListener() {
-        return mListener;
-    }
-
-    public void setListener(ImageDownloadListener listener) {
-        mListener = listener;
     }
 }
