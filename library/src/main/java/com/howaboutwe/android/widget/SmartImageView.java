@@ -108,6 +108,14 @@ public class SmartImageView extends RelativeLayout implements ImageDownload.Imag
     }
 
     /**
+     * Clears the current image url and resets the view to default.
+     */
+    public void clearImage() {
+        mImageUrl = null;
+        showDefaultDrawable();
+    }
+
+    /**
      * Initiates a new image download request. Cancels any download currently in progress.
      */
     private void downloadImage() {

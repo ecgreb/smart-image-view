@@ -1,9 +1,12 @@
 package com.howaboutwe.android.demo.smartimageview;
 
+import com.howaboutwe.android.widget.ImageCache;
 import com.howaboutwe.android.widget.SmartImageView;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import java.net.MalformedURLException;
@@ -16,6 +19,8 @@ public class SmartImageActivity extends Activity {
     public static final String DEMO_IMAGE_URL =
             "http://developer.android.com/images/brand/Android_Robot_200.png";
 
+    private SmartImageView mSmartImageView = null;
+
     /**
      * {@inheritDoc}
      */
@@ -24,9 +29,23 @@ public class SmartImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        final SmartImageView smartImageView = (SmartImageView) findViewById(R.id.smart_image);
+        mSmartImageView = (SmartImageView) findViewById(R.id.smart_image);
+        loadImage();
+
+        final Button refreshButton = (Button) findViewById(R.id.refresh);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageCache.getInstance().evictAll();
+                mSmartImageView.clearImage();
+                loadImage();
+            }
+        });
+    }
+
+    private void loadImage() {
         try {
-            smartImageView.setImageUrl(DEMO_IMAGE_URL);
+            mSmartImageView.setImageUrl(DEMO_IMAGE_URL);
         } catch (MalformedURLException e) {
             Toast.makeText(this, "Invalid image url", Toast.LENGTH_SHORT).show();
         }

@@ -4,7 +4,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:padding="10dp"
+              android:padding="40dp"
               android:gravity="center_horizontal">
 
     <com.howaboutwe.android.widget.SmartImageView
@@ -13,5 +13,12 @@
         android:layout_height="200dp"
         android:scaleType="fitCenter"
         app:default_drawable="@drawable/default_image" />
+
+    <Button
+        android:id="@+id/refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="@string/refresh" />
 
 </LinearLayout>

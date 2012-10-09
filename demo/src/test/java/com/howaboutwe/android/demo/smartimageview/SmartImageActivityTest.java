@@ -23,6 +23,7 @@ public class SmartImageActivityTest {
     @Before
     public void setUp() throws Exception {
         mActivity = new SmartImageActivity();
+        mActivity.onCreate(null);
     }
 
     @Test
@@ -32,7 +33,6 @@ public class SmartImageActivityTest {
 
     @Test
     public void shouldLoadRemoteImage() throws Exception {
-        mActivity.onCreate(null);
         SmartImageView smartImageView = (SmartImageView) mActivity.findViewById(R.id.smart_image);
         assertThat(smartImageView.getImageUrl(), equalTo(SmartImageActivity.DEMO_IMAGE_URL));
     }
