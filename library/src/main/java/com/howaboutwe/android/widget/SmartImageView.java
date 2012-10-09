@@ -7,27 +7,32 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import java.net.MalformedURLException;
 
 /**
  * Remote image view with built-in HTTP download and caching.
  */
-public class SmartImageView extends ImageView implements ImageDownload.ImageDownloadListener {
-    private static final String TAG  = SmartImageView.class.getSimpleName();
+public class SmartImageView extends RelativeLayout implements ImageDownload.ImageDownloadListener {
+    private static final String TAG = SmartImageView.class.getSimpleName();
 
-    final private ImageCache mImageCache = ImageCache.getInstance();
+    final protected ImageCache mImageCache = ImageCache.getInstance();
 
-    private String mImageUrl = null;
-    private Drawable mDefaultDrawable = null;
-    private ImageDownload mImageDownload = null;
+    protected String mImageUrl = null;
+    protected Drawable mDefaultDrawable = null;
+    protected ImageDownload mImageDownload = null;
+    protected ImageView mImageView = null;
+    protected View mLoadingIndicator = null;
 
     /**
      * {@inheritDoc}
      */
     public SmartImageView(Context context) {
-        super(context);
+        this(context, null);
     }
 
     /**
@@ -42,7 +47,14 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
      */
     public SmartImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        parseCustomAttributes(context, attrs);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        inflater.inflate(R.layout.smart_image_view, this);
+        mImageView = (ImageView) findViewById(R.id.image);
+        mLoadingIndicator = findViewById(R.id.loading_indicator);
+
+        if (attrs != null) {
+            parseCustomAttributes(context, attrs);
+        }
     }
 
     /**
@@ -58,6 +70,13 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
         showDefaultDrawable();
     }
 
+    /**
+     * Sets the image url. Loads the bitmap from cache if available. Otherwise initiates a new
+     * {@link ImageDownload} request.
+     *
+     * @param url the url of the image.
+     * @throws MalformedURLException if the url is not valid.
+     */
     public void setImageUrl(String url) throws MalformedURLException {
         if (TextUtils.isEmpty(url)) {
             throw new MalformedURLException("Invalid URL: " + url);
@@ -71,12 +90,26 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
 
         Bitmap cachedBitmap = mImageCache.get(url);
         if (cachedBitmap != null) {
-            setImageBitmap(cachedBitmap);
+            mImageView.setImageBitmap(cachedBitmap);
         } else {
+            showLoadingIndicator();
             downloadImage();
         }
     }
 
+    /**
+     * Returns the url of the image currently being displayed or downloaded if a download is in
+     * progress.
+     *
+     * @return the current image url.
+     */
+    public String getImageUrl() {
+        return mImageUrl;
+    }
+
+    /**
+     * Initiates a new image download request. Cancels any download currently in progress.
+     */
     private void downloadImage() {
         if (mImageDownload != null && mImageDownload.isAlive()) {
             mImageDownload.cancel();
@@ -86,39 +119,63 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
         mImageDownload.start();
     }
 
+    /**
+     * {@link ImageDownload} factory method.
+     *
+     * @return a new {@link ImageDownload}.
+     */
     protected ImageDownload createImageDownload() {
         return new ImageDownload(mImageUrl, this);
     }
 
+    /**
+     * Reset the current display to the default drawable.
+     */
     public void showDefaultDrawable() {
-        setImageDrawable(mDefaultDrawable);
+        mImageView.setImageDrawable(mDefaultDrawable);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void onDownloadSuccess(String url, Bitmap bitmap) {
-        if (url != null && bitmap != null) {
-            if (this.mImageUrl.equals(url)) {
-                loadImage(bitmap);
-            }
-            mImageCache.put(url, bitmap);
-        }
-    }
-
-    @Override
-    public void onDownloadError(String url) {
-        Log.e(TAG, "Error downloading image: " + url);
-    }
-
-    private void loadImage(final Bitmap bitmap) {
+    public void onDownloadSuccess(final String url, final Bitmap bitmap) {
         post(new Runnable() {
             @Override
             public void run() {
-                setImageBitmap(bitmap);
+                hideLoadingIndicator();
+                if (url != null && bitmap != null) {
+                    if (mImageUrl.equals(url)) {
+                        mImageView.setImageBitmap(bitmap);
+                    }
+                    mImageCache.put(url, bitmap);
+                }
+
             }
         });
     }
 
-    // Setters and Getters
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onDownloadError(String url) {
+        Log.e(TAG, "Error downloading image: " + url);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                hideLoadingIndicator();
+            }
+        });
+    }
+
+    private void showLoadingIndicator() {
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+    }
+
+    private void hideLoadingIndicator() {
+        mLoadingIndicator.setVisibility(View.GONE);
+    }
 
     public void setDefaultDrawable(Drawable defaultDrawable) {
         mDefaultDrawable = defaultDrawable;
@@ -126,9 +183,5 @@ public class SmartImageView extends ImageView implements ImageDownload.ImageDown
 
     public Drawable getDefaultDrawable() {
         return mDefaultDrawable;
-    }
-
-    public String getImageUrl() {
-        return mImageUrl;
     }
 }

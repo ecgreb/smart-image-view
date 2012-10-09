@@ -14,7 +14,7 @@ import java.net.MalformedURLException;
 public class SmartImageActivity extends Activity {
 
     public static final String DEMO_IMAGE_URL =
-            "http://developer.android.com/images/home/android-jellybean.png";
+            "http://developer.android.com/images/brand/Android_Robot_200.png";
 
     /**
      * {@inheritDoc}

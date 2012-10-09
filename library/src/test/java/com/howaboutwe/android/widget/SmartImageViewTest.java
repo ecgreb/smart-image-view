@@ -1,10 +1,13 @@
 package com.howaboutwe.android.widget;
 
 import com.howaboutwe.android.widget.support.TestHttpURLConnection;
+import com.howaboutwe.android.widget.support.TestImageDownload;
 import com.howaboutwe.android.widget.support.TestSmartImageView;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.View;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricTestRunner;
@@ -17,6 +20,7 @@ import org.junit.runner.RunWith;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -32,7 +36,8 @@ public class SmartImageViewTest {
 
     @Before
     public void setUp() throws Exception {
-        mSmartImageView = new TestSmartImageView(null);
+        mSmartImageView = new TestSmartImageView(new Activity());
+        ImageCache.getInstance().evictAll();
     }
 
     @Test
@@ -57,7 +62,8 @@ public class SmartImageViewTest {
         imageCache.put(TEST_URL, bitmap);
 
         mSmartImageView.setImageUrl(TEST_URL);
-        ShadowImageView shadowImageView = Robolectric.shadowOf(mSmartImageView);
+        ShadowImageView shadowImageView =
+                (ShadowImageView) Robolectric.shadowOf(mSmartImageView.findViewById(R.id.image));
         assertThat(shadowImageView.getImageBitmap(), notNullValue());
     }
 
@@ -65,7 +71,35 @@ public class SmartImageViewTest {
     public void shouldDownloadImageIfNotCached() throws Exception {
         TestHttpURLConnection.setTestResponseCode(HttpURLConnection.HTTP_OK);
         mSmartImageView.setImageUrl(TEST_URL);
-        ShadowImageView shadowImageView = Robolectric.shadowOf(mSmartImageView);
+        ShadowImageView shadowImageView =
+                (ShadowImageView) Robolectric.shadowOf(mSmartImageView.findViewById(R.id.image));
         assertThat(shadowImageView.getImageBitmap(), notNullValue());
+    }
+
+    @Test
+    public void shouldShowLoadingIndicatorWhileImageDownloadInProgress() throws Exception {
+        TestImageDownload.setTestDownloadEnabled(false);
+        TestHttpURLConnection.setTestResponseCode(HttpURLConnection.HTTP_OK);
+        mSmartImageView.setImageUrl(TEST_URL);
+        View loadingIndicator = mSmartImageView.findViewById(R.id.loading_indicator);
+        assertThat(loadingIndicator.getVisibility(), equalTo(View.VISIBLE));
+    }
+
+    @Test
+    public void shouldHideLoadingIndicatorOnImageDownloadSuccess() throws Exception {
+        TestHttpURLConnection.setTestResponseCode(HttpURLConnection.HTTP_OK);
+        mSmartImageView.setImageUrl(TEST_URL);
+        mSmartImageView.onDownloadSuccess(TEST_URL, BitmapFactory.decodeFile(""));
+        View loadingIndicator = mSmartImageView.findViewById(R.id.loading_indicator);
+        assertThat(loadingIndicator.getVisibility(), equalTo(View.GONE));
+    }
+
+    @Test
+    public void shouldHideLoadingIndicatorOnImageDownloadError() throws Exception {
+        TestHttpURLConnection.setTestResponseCode(HttpURLConnection.HTTP_BAD_REQUEST);
+        mSmartImageView.setImageUrl(TEST_URL);
+        mSmartImageView.onDownloadSuccess(TEST_URL, BitmapFactory.decodeFile(""));
+        View loadingIndicator = mSmartImageView.findViewById(R.id.loading_indicator);
+        assertThat(loadingIndicator.getVisibility(), equalTo(View.GONE));
     }
 }
