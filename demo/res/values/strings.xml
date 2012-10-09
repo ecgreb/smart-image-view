@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">SmartImageView Demo</string>
     <string name="refresh">Refresh</string>
+    <string name="indicator_switch">Show loading indicator</string>
 </resources>
