@@ -102,4 +102,14 @@ public class SmartImageViewTest {
         View loadingIndicator = mSmartImageView.findViewById(R.id.loading_indicator);
         assertThat(loadingIndicator.getVisibility(), equalTo(View.GONE));
     }
+
+    @Test
+    public void shouldNotShowLoadingIndicatorIfDisabled() throws Exception {
+        TestImageDownload.setTestDownloadEnabled(false);
+        TestHttpURLConnection.setTestResponseCode(HttpURLConnection.HTTP_OK);
+        mSmartImageView.setLoadingIndicatorEnabled(false);
+        mSmartImageView.setImageUrl(TEST_URL);
+        View loadingIndicator = mSmartImageView.findViewById(R.id.loading_indicator);
+        assertThat(loadingIndicator.getVisibility(), equalTo(View.GONE));
+    }
 }

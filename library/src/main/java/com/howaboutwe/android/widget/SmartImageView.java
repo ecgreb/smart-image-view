@@ -27,6 +27,7 @@ public class SmartImageView extends RelativeLayout implements ImageDownload.Imag
     protected ImageDownload mImageDownload = null;
     protected ImageView mImageView = null;
     protected View mLoadingIndicator = null;
+    private boolean mIsLoadingIndicatorEnabled = true;
 
     /**
      * {@inheritDoc}
@@ -178,7 +179,9 @@ public class SmartImageView extends RelativeLayout implements ImageDownload.Imag
     }
 
     private void showLoadingIndicator() {
-        mLoadingIndicator.setVisibility(View.VISIBLE);
+        if (mIsLoadingIndicatorEnabled) {
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
     }
 
     private void hideLoadingIndicator() {
@@ -191,5 +194,9 @@ public class SmartImageView extends RelativeLayout implements ImageDownload.Imag
 
     public Drawable getDefaultDrawable() {
         return mDefaultDrawable;
+    }
+
+    public void setLoadingIndicatorEnabled(boolean isEnabled) {
+        mIsLoadingIndicatorEnabled = isEnabled;
     }
 }
