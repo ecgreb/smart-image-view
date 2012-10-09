@@ -19,4 +19,14 @@ public class ImageCache extends LruCache<String, Bitmap> {
     private ImageCache() {
         super(CACHE_SIZE_IN_BYTES);
     }
+
+    @Override
+    protected int sizeOf(String key, Bitmap value) {
+        return value.getRowBytes() * value.getHeight();
+    }
+
+    @Override
+    protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
+        oldValue.recycle();
+    }
 }
